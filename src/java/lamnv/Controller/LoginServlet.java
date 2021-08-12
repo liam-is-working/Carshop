@@ -22,8 +22,9 @@ import lamnv.DTO.UserDTO;
  *
  * @author ACER
  */
-@WebServlet(name = "LoginServlet", urlPatterns = {"/Login"})
+@WebServlet(name = "LoginServlet", urlPatterns = {"/login"})
 public class LoginServlet extends HttpServlet {
+
     private final String loginViewURL = "/WEB-INF/jsp/view/login.jsp";
     private final String shopViewURL = "/WEB-INF/jsp/view/shop.jsp";
 
@@ -38,7 +39,7 @@ public class LoginServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -54,14 +55,17 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        if(action.equals("logout")){
-            HttpSession session = request.getSession(false);
-            if(session!=null){
-                session.removeAttribute("user");
+        if (action != null) {
+            if (action.equals("logout")) {
+                HttpSession session = request.getSession(false);
+                if (session != null) {
+                    session.removeAttribute("user");
+                }
+                response.sendRedirect("login");
             }
-            response.sendRedirect(loginViewURL);
         }
-        response.sendRedirect(loginViewURL);
+        response.sendRedirect("login");
+
     }
 
     /**
@@ -76,37 +80,44 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        if(action.equals("login")){
-            
-            //Require user to logout first
-            HttpSession session = request.getSession();
-            if(session.getAttribute("user") != null){
-                request.setAttribute("loginError", "Must logout before login new user");
-                RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
-                rd.forward(request, response);
-            }
-            
-            String userID = request.getParameter("userID");
-            String password = request.getParameter("password");
-            if(userID!=null && password!=null){
-                UserDAO dao = new UserDAO();
-                UserDTO userInfo = dao.getUser(userID, password);
-                //Cant find user in database 
-                if(userInfo==null){
-                    request.setAttribute("loginError", "User is not in database");
+        
+        if (action != null) {
+            if (action.equals("login")) {
+
+                //Require user to logout first
+                HttpSession session = request.getSession();
+                if (session.getAttribute("user") != null) {
+                    request.setAttribute("loginError", "Must logout before login new user");
                     RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
                     rd.forward(request, response);
                 }
-                //Set user infor in session
-                session.setAttribute("user", userInfo);
-                response.sendRedirect(shopViewURL);
+
+                String userID = request.getParameter("userID");
+                String password = request.getParameter("password");
+                if (userID != null && password != null) {
+                    UserDAO dao = new UserDAO();
+                    UserDTO userInfo = dao.getUser(userID, password);
+                    //Cant find user in database 
+                    if (userInfo == null) {
+                        request.setAttribute("loginError", "User is not in database");
+                        RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
+                        rd.forward(request, response);
+                    }
+                    //Set user infor in session
+                    session.setAttribute("user", userInfo);
+                    response.sendRedirect("shop");
+                }
+
+                //userID and password are null
+                request.setAttribute("loginError", "Please type userID and password to login");
+                RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
+                rd.forward(request, response);
             }
-            
-            //userID and password are null
-            request.setAttribute("loginError", "Please type userID and password to login");
-            RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
-            rd.forward(request, response);
         }
+        
+        //no action specify
+        response.sendRedirect("login");
+
     }
 
     /**

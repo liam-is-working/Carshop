@@ -21,10 +21,12 @@ import lamnv.DTO.UserDTO;
  *
  * @author ACER
  */
-@WebServlet(name = "SignUpServlet", urlPatterns = {"/SignUp"})
+@WebServlet(name = "SignUpServlet", urlPatterns = {"/signup"})
 public class SignUpServlet extends HttpServlet {
+
     private final String signUpViewURL = "/WEB-INF/jsp/view/signup.jsp";
     private final String loginViewURL = "/WEB-INF/jsp/view/login.jsp";
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -50,7 +52,7 @@ public class SignUpServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.sendRedirect(signUpViewURL);
+        response.sendRedirect("/login");
     }
 
     /**
@@ -65,35 +67,37 @@ public class SignUpServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        if(action.equals("signUp")){
-            String userID = request.getParameter("userID");
-            String fullName = request.getParameter("fullName");
-            String password = request.getParameter("password");
-            
-            //Validate here
-            
-            UserDAO dao = new UserDAO();
-            
-            //Check userID in db
-            boolean doesUserIDExist = dao.checkUserID(userID);
-            if(doesUserIDExist){
-                request.setAttribute("signUpError", "UserID is used, please choose another userID");
-                RequestDispatcher rd = request.getRequestDispatcher(signUpViewURL);
-                rd.forward(request, response);
+        if (action != null) {
+            if (action.equals("signUp")) {
+                String userID = request.getParameter("userID");
+                String fullName = request.getParameter("fullName");
+                String password = request.getParameter("password");
+
+                //Validate here
+                UserDAO dao = new UserDAO();
+
+                //Check userID in db
+                boolean doesUserIDExist = dao.checkUserID(userID);
+                if (doesUserIDExist) {
+                    request.setAttribute("signUpError", "UserID is used, please choose another userID");
+                    RequestDispatcher rd = request.getRequestDispatcher(signUpViewURL);
+                    rd.forward(request, response);
+                }
+
+                //Create user in db
+                UserDTO signUpInfo = new UserDTO(userID, password, fullName);
+                UserDTO newUser = dao.createUser(signUpInfo);
+                if (newUser == null) {
+                    request.setAttribute("signUpError", "Cannot create new user in database, please try again");
+                    RequestDispatcher rd = request.getRequestDispatcher(signUpViewURL);
+                    rd.forward(request, response);
+                }
+
+                //Create successfully
+                response.sendRedirect("/login");
             }
-            
-            //Create user in db
-            UserDTO signUpInfo = new UserDTO(userID, password, fullName);
-            UserDTO newUser = dao.createUser(signUpInfo);
-            if(newUser == null){
-                request.setAttribute("signUpError", "Cannot create new user in database, please try again");
-                RequestDispatcher rd = request.getRequestDispatcher(signUpViewURL);
-                rd.forward(request, response);
-            }
-            
-            //Create successfully
-            response.sendRedirect(loginViewURL);
         }
+
     }
 
     /**
