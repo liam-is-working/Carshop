@@ -6,7 +6,6 @@
 package lamnv.Controller;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,9 +13,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.websocket.Session;
 import lamnv.DAO.UserDAO;
 import lamnv.DTO.UserDTO;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -24,9 +24,11 @@ import lamnv.DTO.UserDTO;
  */
 @WebServlet(name = "LoginServlet", urlPatterns = {"/login"})
 public class LoginServlet extends HttpServlet {
+    
+    private static final Logger log = LogManager.getLogger();
 
     private final String loginViewURL = "/WEB-INF/jsp/view/login.jsp";
-    private final String shopViewURL = "/WEB-INF/jsp/view/shop.jsp";
+    private final String errorViewURL = "/WEB-INF/jsp/view/error.jsp";
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -54,17 +56,30 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
+
         String action = request.getParameter("action");
-        if (action != null) {
-            if (action.equals("logout")) {
-                HttpSession session = request.getSession(false);
-                if (session != null) {
-                    session.removeAttribute("user");
-                }
-                response.sendRedirect("login");
-            }
+        if (action == null) {
+            action = "login";
         }
-        response.sendRedirect("login");
+
+        if (action.equals("logout")) {
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
+            rd.forward(request, response);
+            return;
+        }
+
+        if (action.equals("login")) {
+            HttpSession session = request.getSession(false);
+            if (session!=null && session.getAttribute("user") != null){
+                response.sendRedirect("product");
+                return;
+            }
+            rd.forward(request, response);
+        }
 
     }
 
@@ -80,41 +95,48 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        
-        if (action != null) {
-            if (action.equals("login")) {
+        if (action == null) {
+            action = "login";
+        }
 
-                //Require user to logout first
-                HttpSession session = request.getSession();
-                if (session.getAttribute("user") != null) {
-                    request.setAttribute("loginError", "Must logout before login new user");
+        if (action.equals("login")) {
+            //Require user to logout first
+            HttpSession session = request.getSession(false);
+            if (session!=null && session.getAttribute("user") != null) {
+                request.setAttribute("loginError", "Must logout before login new user");
+                //forward to error page
+                RequestDispatcher rd = request.getRequestDispatcher(errorViewURL);
+                rd.forward(request, response);
+                return;
+            }
+            
+            //Get login in4
+            String userID = request.getParameter("userID");
+            String password = request.getParameter("password");
+            if (userID != null && password != null) {
+                UserDAO dao = new UserDAO();
+                UserDTO userInfo = dao.getUser(userID, password);
+                
+                //Cant find user in database 
+                if (userInfo == null) {
+                    request.setAttribute("loginError", "User is not in database");
                     RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
                     rd.forward(request, response);
+                    return;
                 }
-
-                String userID = request.getParameter("userID");
-                String password = request.getParameter("password");
-                if (userID != null && password != null) {
-                    UserDAO dao = new UserDAO();
-                    UserDTO userInfo = dao.getUser(userID, password);
-                    //Cant find user in database 
-                    if (userInfo == null) {
-                        request.setAttribute("loginError", "User is not in database");
-                        RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
-                        rd.forward(request, response);
-                    }
-                    //Set user infor in session
-                    session.setAttribute("user", userInfo);
-                    response.sendRedirect("shop");
-                }
-
-                //userID and password are null
-                request.setAttribute("loginError", "Please type userID and password to login");
-                RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
-                rd.forward(request, response);
+                
+                //Login success, set user infor in session
+                session.setAttribute("user", userInfo);
+                response.sendRedirect("product");
+                return;
             }
+
+            //userID and password are null
+            request.setAttribute("loginError", "Please type userID and password to login");
+            RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
+            rd.forward(request, response);
         }
-        
+
         //no action specify
         response.sendRedirect("login");
 

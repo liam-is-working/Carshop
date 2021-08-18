@@ -33,7 +33,7 @@ public class CategoryDAO {
                 try(Statement stm = con.createStatement()){
                     try(ResultSet rs = stm.executeQuery(queryString) ){
                         List<CategoryDTO> categoryList = new ArrayList<>();
-                        if(rs.next()){
+                        while(rs.next()){
                             CategoryDTO category = new CategoryDTO(rs.getInt("CategoryID"), rs.getNString("CategoryName"));
                             categoryList.add(category);
                         }
@@ -164,5 +164,28 @@ public class CategoryDAO {
             Logger.getLogger(CategoryDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
+    }
+
+    public List<CategoryDTO> getAvailableCategory() {
+        try(Connection con = DBHelper.getConnection()){
+            if(con!=null){
+                String queryString = "SELECT CategoryID, CategoryName "
+                        + "FROM dbo.tblCategory "
+                        + "WHERE IsEnable = 1";
+                try(Statement stm = con.createStatement()){
+                    try(ResultSet rs = stm.executeQuery(queryString) ){
+                        List<CategoryDTO> categoryList = new ArrayList<>();
+                        while(rs.next()){
+                            CategoryDTO category = new CategoryDTO(rs.getInt("CategoryID"), rs.getNString("CategoryName"));
+                            categoryList.add(category);
+                        }
+                        return categoryList;
+                    }
+                }
+            }
+        } catch (NamingException | SQLException ex) {
+            Logger.getLogger(CategoryDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 }

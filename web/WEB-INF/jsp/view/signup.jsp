@@ -4,7 +4,6 @@
     Author     : ACER
 --%>
 
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
     <head>
@@ -13,12 +12,17 @@
     </head>
     <body>
         <h1>Sign up new account</h1>
-        <form action="signup">
+        <c:forEach items="${errorList}" var="error">
+            <c:out value="${error.getMessage()}"/>
+            <br>
+        </c:forEach>
+        <form action="signup" method="POST">
             <input type="hidden" name="action" value="signup" />
-            userID<input type="text" name="userID" value="" />
+            userID<input type="text" name="userID" value="${param['userID']}" />
             password<input type="password" name="password" value="" />
-            FullName<input type="text" name="FullName" value="" />
-            <input type="submit" value="Sign up" />
+            FullName<input type="text" name="fullName" value="${param['fullName']}"  />
+            <input type="submit" name="action" value="signup" />
         </form>
+        <a href="<c:url value="login"/>">Login</a>
     </body>
 </html>

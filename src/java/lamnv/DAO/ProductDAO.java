@@ -5,7 +5,6 @@
  */
 package lamnv.DAO;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,29 +12,32 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.naming.NamingException;
 import lamnv.DTO.ProductDTO;
 import lamnv.Util.DBHelper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author ACER
  */
 public class ProductDAO {
-    
-    public List<ProductDTO> getProductListByCategory(int catID){
-        try(Connection con = DBHelper.getConnection()){
-            if(con!=null){
+
+    private final Logger log = LogManager.getLogger();
+
+    public List<ProductDTO> getProductListByCategory(int catID) {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
                 String queryString = "SELECT ProductID, ProductName, Quantity, Price "
                         + "FROM dbo.tblProduct "
-                        + "WHERE CategoryID = ?";
-                try(PreparedStatement stm = con.prepareStatement(queryString)){
+                        + "WHERE CategoryID = ? AND IsEnable = 1";
+                try (PreparedStatement stm = con.prepareStatement(queryString)) {
                     stm.setInt(1, catID);
-                    try(ResultSet rs = stm.executeQuery(queryString) ){
+                    try (ResultSet rs = stm.executeQuery()) {
+                        stm.setInt(1, catID);
                         List<ProductDTO> productList = new ArrayList<>();
-                        if(rs.next()){
+                        while (rs.next()) {
                             ProductDTO product = new ProductDTO(rs.getInt("ProductID"), rs.getInt("Quantity"),
                                     rs.getBigDecimal("Price"), rs.getNString("ProductName"), catID);
                             productList.add(product);
@@ -45,20 +47,22 @@ public class ProductDAO {
                 }
             }
         } catch (NamingException | SQLException ex) {
-            Logger.getLogger(ProductDAO.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
         }
         return null;
     }
-    
-    public List<ProductDTO> getProductList(){
-        try(Connection con = DBHelper.getConnection()){
-            if(con!=null){
+
+    public List<ProductDTO> getProductListByName(String searchName) {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
                 String queryString = "SELECT ProductID, ProductName, Quantity, Price, CategoryID "
-                        + "FROM dbo.tblProduct ";
-                try(Statement stm = con.createStatement()){
-                    try(ResultSet rs = stm.executeQuery(queryString) ){
+                        + "FROM dbo.tblProduct "
+                        + "WHERE ProductName LIKE ? AND IsEnable = 1";
+                try (PreparedStatement stm = con.prepareStatement(queryString)) {
+                    stm.setString(1, "%" + searchName + "%");
+                    try (ResultSet rs = stm.executeQuery()) {
                         List<ProductDTO> productList = new ArrayList<>();
-                        if(rs.next()){
+                        while (rs.next()) {
                             ProductDTO product = new ProductDTO(rs.getInt("ProductID"), rs.getInt("Quantity"),
                                     rs.getBigDecimal("Price"), rs.getNString("ProductName"), rs.getInt("CategoryID"));
                             productList.add(product);
@@ -68,129 +72,225 @@ public class ProductDAO {
                 }
             }
         } catch (NamingException | SQLException ex) {
-            Logger.getLogger(ProductDAO.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
         }
         return null;
     }
-        
-//    public ProductDTO getProduct(String productID, String ProductName){
-//        try(Connection con = DBHelper.getConnection()){
-//            if(con!=null){
-//                String queryString = "SELECT FullName, RoleID "
-//                        + "FROM dbo.tblProduct "
-//                        + "WHERE ProductID = ? AND Password = ?";
-//                try(PreparedStatement stm = con.prepareStatement(queryString)){
-//                    stm.setString(1, productID);
-//                    stm.setString(2, password);
-//                    try(ResultSet rs = stm.executeQuery() ){
-//                        if(rs.next()){
-//                            ProductDTO returnProduct = new ProductDTO(productID, rs.getNString("FullName"),rs.getInt("RoleID") );
-//                            return returnProduct;
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (NamingException | SQLException ex) {
-//            Logger.getLogger(ProductDAO.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return null;
-//    }
-    
-//    public boolean checkProductID(String productID){
-//        try(Connection con = DBHelper.getConnection()){
-//            if(con!=null){
-//                String queryString = "SELECT ProductID "
-//                        + "FROM dbo.tblProduct "
-//                        + "WHERE ProductID = ?";
-//                try(PreparedStatement stm = con.prepareStatement(queryString)){
-//                    stm.setString(1, productID);
-//                    try(ResultSet rs = stm.executeQuery() ){
-//                        if(rs.next()){
-//                            return true;
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (NamingException | SQLException ex) {
-//            Logger.getLogger(ProductDAO.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return false;
-//    }
-    
+
+    public List<ProductDTO> getProductList() {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
+                String queryString = "SELECT ProductID, ProductName, Quantity, Price, CategoryID, IsEnable "
+                        + "FROM dbo.tblProduct ";
+                try (Statement stm = con.createStatement()) {
+                    try (ResultSet rs = stm.executeQuery(queryString)) {
+                        List<ProductDTO> productList = new ArrayList<>();
+                        while (rs.next()) {
+                            ProductDTO product = new ProductDTO(rs.getInt("ProductID"), rs.getInt("Quantity"),
+                                    rs.getBigDecimal("Price"), rs.getNString("ProductName"),
+                                    rs.getInt("CategoryID"), rs.getBoolean("IsEnable"));
+                            productList.add(product);
+                        }
+                        return productList;
+                    }
+                }
+            }
+        } catch (NamingException | SQLException ex) {
+            log.error(ex);
+        }
+        return null;
+    }
+
     //product transaction instead
-    public boolean editProduct(ProductDTO updatedProduct){
-        try(Connection con = DBHelper.getConnection()){
-            if(con!=null){
+    public boolean editProduct(ProductDTO updatedProduct) {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
                 String queryString = "UPDATE dbo.tblProduct "
-                        + "SET ProductName = ?, Price = ?, CategoryID = ?, Quantity = ? "
+                        + "SET ProductName = ?, Price = ?, CategoryID = ?, Quantity = ?, isEnable = ? "
                         + "WHERE ProductID = ?";
-                try(PreparedStatement stm = con.prepareStatement(queryString)){
+                try (PreparedStatement stm = con.prepareStatement(queryString)) {
                     stm.setString(1, updatedProduct.productName);
                     stm.setBigDecimal(2, updatedProduct.price);
                     stm.setInt(3, updatedProduct.categoryID);
                     stm.setInt(4, updatedProduct.quantity);
+                    stm.setBoolean(5, updatedProduct.isEnable);
                     int result = stm.executeUpdate();
-                    return result == 1;
+                    if (result == 1) {
+                        log.info("ProductID:" + updatedProduct.productID + " has been updated");
+                        return true;
+                    }
                 }
             }
         } catch (NamingException | SQLException ex) {
-            Logger.getLogger(ProductDAO.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
         }
         return false;
     }
-    
+
     //Hardcode role
-    public ProductDTO createProduct(ProductDTO newProduct){
-        try(Connection con = DBHelper.getConnection()){
-            if(con!=null){
-                String queryString = "INSERT INTO dbo.tblProduct (ProductName) "
-                        + "VALUES(?)";
-                try(PreparedStatement stm = con.prepareStatement(queryString)){
+    public Integer createProduct(ProductDTO newProduct) {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
+                String queryString = "INSERT INTO dbo.tblProduct (ProductName, Quantity, Price, CategoryID, IsEnable) "
+                        + "OUTPUT INSERTED.ProductID "
+                        + "VALUES(?,?,?,?,?)";
+                try (PreparedStatement stm = con.prepareStatement(queryString)) {
                     stm.setString(1, newProduct.productName);
-                    int result = stm.executeUpdate();
-                    if(result == 1)
-                        return newProduct;
+                    stm.setInt(2, newProduct.quantity);
+                    stm.setBigDecimal(3, newProduct.price);
+                    stm.setInt(4, newProduct.categoryID);
+                    stm.setBoolean(5, newProduct.isEnable);
+                    try (ResultSet rs = stm.executeQuery()) {
+                        if (rs.next()) {
+                            log.info("ProductID:" + rs.getInt("ProductID") + " has been created");
+                            return rs.getInt("ProductID");
+                        }
+                    } catch (Exception e) {
+                    }
                 }
             }
         } catch (NamingException | SQLException ex) {
-            Logger.getLogger(ProductDAO.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
         }
         return null;
     }
-    
-    public boolean unableProduct(int productID){
-        try(Connection con = DBHelper.getConnection()){
-            if(con!=null){
+
+    public boolean unableProduct(int productID) {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
                 String queryString = "UPDATE dbo.tblProduct "
                         + "SET IsEnable = 0 "
                         + "WHERE ProductID = ?";
-                try(PreparedStatement stm = con.prepareStatement(queryString)){
+                try (PreparedStatement stm = con.prepareStatement(queryString)) {
                     stm.setInt(1, productID);
                     int result = stm.executeUpdate();
-                    return result == 1;
+                    if (result == 1) {
+                        log.info("ProductID:" + productID + " has been unabled");
+                        return true;
+                    }
                 }
             }
         } catch (NamingException | SQLException ex) {
-            Logger.getLogger(ProductDAO.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
         }
         return false;
     }
-    
-    public boolean enableProduct(int productID){
-        try(Connection con = DBHelper.getConnection()){
-            if(con!=null){
+
+    public boolean enableProduct(int productID) {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
                 String queryString = "UPDATE dbo.tblProduct "
                         + "SET IsEnable = 1 "
                         + "WHERE ProductID = ?";
-                try(PreparedStatement stm = con.prepareStatement(queryString)){
+                try (PreparedStatement stm = con.prepareStatement(queryString)) {
                     stm.setInt(1, productID);
                     int result = stm.executeUpdate();
-                    return result == 1;
+                    if (result == 1) {
+                        log.info("ProductID:" + productID + " has been enabled");
+                        return true;
+                    }
                 }
             }
         } catch (NamingException | SQLException ex) {
-            Logger.getLogger(ProductDAO.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
         }
         return false;
+    }
+
+    public List<ProductDTO> getAvailableProduct() {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
+                String queryString = "SELECT ProductID, ProductName, Quantity, Price, CategoryID "
+                        + "FROM dbo.tblProduct "
+                        + "WHERE IsEnable = 1";
+                try (Statement stm = con.createStatement()) {
+                    try (ResultSet rs = stm.executeQuery(queryString)) {
+                        List<ProductDTO> productList = new ArrayList<>();
+                        while (rs.next()) {
+                            ProductDTO product = new ProductDTO(rs.getInt("ProductID"), rs.getInt("Quantity"),
+                                    rs.getBigDecimal("Price"), rs.getNString("ProductName"), rs.getInt("CategoryID"));
+                            productList.add(product);
+                        }
+                        return productList;
+                    }
+                }
+            }
+        } catch (NamingException | SQLException ex) {
+            log.error(ex);
+        }
+        return null;
+    }
+
+    public List<ProductDTO> getUnableProductList() {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
+                String queryString = "SELECT ProductID, ProductName, Quantity, Price, CategoryID "
+                        + "FROM dbo.tblProduct "
+                        + "WHERE IsEnable = 0";
+                try (Statement stm = con.createStatement()) {
+                    try (ResultSet rs = stm.executeQuery(queryString)) {
+                        List<ProductDTO> productList = new ArrayList<>();
+                        while (rs.next()) {
+                            ProductDTO product = new ProductDTO(rs.getInt("ProductID"), rs.getInt("Quantity"),
+                                    rs.getBigDecimal("Price"), rs.getNString("ProductName"), rs.getInt("CategoryID"));
+                            productList.add(product);
+                        }
+                        return productList;
+                    }
+                }
+            }
+        } catch (NamingException | SQLException ex) {
+            log.error(ex);
+        }
+        return null;
+    }
+
+    public ProductDTO getProductByID(int proID) {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
+                String queryString = "SELECT ProductID, ProductName, Quantity, Price, CategoryID, IsEnable "
+                        + "FROM dbo.tblProduct "
+                        + "WHERE ProductID = ?";
+                try (PreparedStatement stm = con.prepareStatement(queryString)) {
+                    stm.setInt(1, proID);
+                    try (ResultSet rs = stm.executeQuery()) {
+                        if (rs.next()) {
+                            ProductDTO product = new ProductDTO(rs.getInt("ProductID"), rs.getInt("Quantity"),
+                                    rs.getBigDecimal("Price"), rs.getNString("ProductName"),
+                                    rs.getInt("CategoryID"), rs.getBoolean("IsEnable"));
+                            return product;
+                        }
+                    }
+                }
+            }
+        } catch (NamingException | SQLException ex) {
+            log.error(ex);
+        }
+        return null;
+    }
+
+    public ProductDTO getAvailableProductByID(int proID) {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
+                String queryString = "SELECT ProductID, ProductName, Quantity, Price, CategoryID "
+                        + "FROM dbo.tblProduct "
+                        + "WHERE ProductID = ? AND IsEnable=?";
+                try (PreparedStatement stm = con.prepareStatement(queryString)) {
+                    stm.setInt(1, proID);
+                    stm.setBoolean(2, true);
+                    try (ResultSet rs = stm.executeQuery()) {
+                        if (rs.next()) {
+                            ProductDTO product = new ProductDTO(rs.getInt("ProductID"), rs.getInt("Quantity"),
+                                    rs.getBigDecimal("Price"), rs.getNString("ProductName"),
+                                    rs.getInt("CategoryID"), true);
+                            return product;
+                        }
+                    }
+                }
+            }
+        } catch (NamingException | SQLException ex) {
+            log.error(ex);
+        }
+        return null;
     }
 }

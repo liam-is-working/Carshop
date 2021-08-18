@@ -4,7 +4,6 @@
     Author     : ACER
 --%>
 
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
     <head>
@@ -14,10 +13,10 @@
     <body>
         <h1>Login</h1>
         <form action="login" method="POST">
-            <input type="hidden" name="action" value="login" />
             UserID<input type="text" name="userID" value="" />
             Password<input type="password" name="password" value="" />
+            <input type="submit" name="action" value="login" />
         </form>
-        <a href="/signup">Sign up</a>
+        <a href="<c:url value="signup"/>">Sign up</a>
     </body>
 </html>
