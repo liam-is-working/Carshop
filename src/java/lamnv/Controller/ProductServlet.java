@@ -7,10 +7,8 @@ package lamnv.Controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.RequestDispatcher;
@@ -214,13 +212,12 @@ public class ProductServlet extends HttpServlet {
             int searchCatIDInt = Integer.parseInt(searchCategoryIDTxt);
             List<ProductDTO> proList = dao.getProductListByCategory(searchCatIDInt);
             request.setAttribute("productList", proList);
-            RequestDispatcher rd = request.getRequestDispatcher(productViewURL);
-            rd.forward(request, response);
+            
         } catch (NumberFormatException e) {
-            request.setAttribute("inputError", "Category ID must be an integer");
-            RequestDispatcher rd = request.getRequestDispatcher(errorViewURL);
-            rd.forward(request, response);
+            request.setAttribute("searchByCategoryError", "Category ID must be an integer");
         }
+        RequestDispatcher rd = request.getRequestDispatcher(productViewURL);
+            rd.forward(request, response);
 
     }
 
@@ -357,12 +354,12 @@ public class ProductServlet extends HttpServlet {
 
                 //perform edit on db
                 if (valid) {
-                    ProductDTO updatePro = new ProductDTO(quantity, price, proName, catID, isEnable);
+                    ProductDTO updatePro = new ProductDTO(proID,quantity, price, proName, catID, isEnable);
 
                     if (dao.editProduct(updatePro)) {
-                        request.setAttribute("serverErr", "Edit unsuccessfully or nothing change");
+                        success=true;
                     } else {
-                        success = true;
+                        success = false;
                     }
                 }
 

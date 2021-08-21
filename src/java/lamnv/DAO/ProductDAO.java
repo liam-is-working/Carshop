@@ -114,6 +114,7 @@ public class ProductDAO {
                     stm.setInt(3, updatedProduct.categoryID);
                     stm.setInt(4, updatedProduct.quantity);
                     stm.setBoolean(5, updatedProduct.isEnable);
+                    stm.setInt(6, updatedProduct.productID);
                     int result = stm.executeUpdate();
                     if (result == 1) {
                         log.info("ProductID:" + updatedProduct.productID + " has been updated");

@@ -66,7 +66,8 @@
                 <button>Clear all</button>
             </a>
                 <form action="order" method="POST">
-                <input type="text" name="address" value="${param["address"]}" />
+                    Address<input type="text" name="address" value="${param["address"]}" /><br>
+                Email<input type="text" name="email" value="${param["email"]}" />
                 <input type="submit" name="action" value="submitOrder" />
             </form>
         </c:if>
@@ -77,7 +78,9 @@
         <c:out value="${addError}"/>
         <c:out value="${deleteError}"/>
         <c:out value="${checkOutError}"/>
-        <c:out value="${checkOutSuccess}"/>
+        <c:out value="${checkOutSuccess}"/><br>
+        <c:out value="${verificationMailMessage}"/>
+        
 
 
 

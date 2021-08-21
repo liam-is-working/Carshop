@@ -48,6 +48,23 @@ public class OrderDTO {
     public String userID;
     public Timestamp orderDate;
     public String address;
+    public boolean isVerified;
+
+    public OrderDTO(int orderID, String userID, Timestamp orderDate, String address, boolean isVerified) {
+        this.orderID = orderID;
+        this.userID = userID;
+        this.orderDate = orderDate;
+        this.address = address;
+        this.isVerified = isVerified;
+    }
+
+    public boolean isIsVerified() {
+        return isVerified;
+    }
+
+    public void setIsVerified(boolean isVerified) {
+        this.isVerified = isVerified;
+    }
 
     public OrderDTO() {
     }

@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import javax.naming.NamingException;
 import lamnv.DTO.OrderDTO;
 import lamnv.DTO.ProductDTO;
@@ -27,6 +28,7 @@ import org.apache.logging.log4j.Logger;
  * @author ACER
  */
 public class OrderDAO {
+
     private final Logger log = LogManager.getLogger();
 
     public UserDTO getOrderOwner(int orderID) {
@@ -56,7 +58,7 @@ public class OrderDAO {
 
     public List<OrderDTO> getCustomerOrders(String userID) {
         try (Connection con = DBHelper.getConnection()) {
-            String sql = "SELECT OrderID, OrderDate, Address "
+            String sql = "SELECT OrderID, OrderDate, Address, IsVerified "
                     + "FROM tblOrder "
                     + "WHERE UserID = ?";
 
@@ -65,7 +67,8 @@ public class OrderDAO {
                 try (ResultSet rs = stm.executeQuery()) {
                     List<OrderDTO> orderList = new ArrayList<>();
                     while (rs.next()) {
-                        orderList.add(new OrderDTO(rs.getInt("OrderID"), userID, rs.getTimestamp("OrderDate"), rs.getNString("Address")));
+                        orderList.add(new OrderDTO(rs.getInt("OrderID"), userID, rs.getTimestamp("OrderDate"),
+                                 rs.getNString("Address"), rs.getBoolean("IsVerified")));
                     }
                     return orderList;
                 }
@@ -144,24 +147,26 @@ public class OrderDAO {
                 }
 
             }
-        }catch (NamingException | SQLException ex) {
+        } catch (NamingException | SQLException ex) {
             log.error(ex);
-            if(ex.getMessage().contains("CHK_ProductQuantity"))
+            if (ex.getMessage().contains("CHK_ProductQuantity")) {
                 throw new OrderExc("Not enought products in stock");
+            }
         }
         return null;
     }
 
     public List<OrderDTO> AllOrder() {
         try (Connection con = DBHelper.getConnection()) {
-            String sql = "SELECT OrderID, OrderDate, Address, UserID "
+            String sql = "SELECT OrderID, OrderDate, Address, UserID, IsVerified "
                     + "FROM tblOrder ";
 
             try (PreparedStatement stm = con.prepareStatement(sql)) {
                 try (ResultSet rs = stm.executeQuery()) {
                     List<OrderDTO> orderList = new ArrayList<>();
                     while (rs.next()) {
-                        orderList.add(new OrderDTO(rs.getInt("OrderID"), rs.getNString("UserID"), rs.getTimestamp("OrderDate"), rs.getNString("Address")));
+                        orderList.add(new OrderDTO(rs.getInt("OrderID"), rs.getNString("UserID"),
+                                rs.getTimestamp("OrderDate"), rs.getNString("Address"), rs.getBoolean("IsVerified")));
                     }
                     return orderList;
                 }
@@ -171,4 +176,21 @@ public class OrderDAO {
         }
         return null;
     }
+
+    public boolean verifyOrder(int orderID) {
+        try (Connection con = DBHelper.getConnection()) {
+            String sql = "UPDATE tblOrder "
+                    + "SET IsVerified = 1"
+                    + "WHERE OrderID = ?";
+
+            try (PreparedStatement stm = con.prepareStatement(sql)) {
+                stm.setInt(1, orderID);
+                return stm.executeUpdate() == 1;
+            }
+        } catch (NamingException | SQLException ex) {
+            log.error(ex);
+        }
+        return false;
+    }
 }
+

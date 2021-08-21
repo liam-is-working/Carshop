@@ -22,6 +22,7 @@
                         <th>OrderID</th>
                         <th>Address</th>
                         <th>Date</th>
+                        <th>IsVerified</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,6 +36,7 @@
                                 </td>
                                 <td>${order.address}</td>
                             <td>${order.orderDate}</td>
+                            <td>${order.isVerified}</td>
                         </tr>
                     </c:forEach>
 

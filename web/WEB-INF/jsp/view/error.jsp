@@ -11,6 +11,6 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <h1>Error</h1>
+        ${loginGGError}
     </body>
 </html>

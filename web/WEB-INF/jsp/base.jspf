@@ -2,7 +2,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:if test="${user != null}">
-    <h3>Hello ${user.fullName}</h3>
+    <h3>Hello <c:out value="${user.fullName}"/></h3>
 </c:if>
 <nav>
     <c:if test="${user != null}">

@@ -19,6 +19,7 @@
             Input<input type="text" name="searchCategoryIDTxt" value="${request.getParameter("searchCategoryIDTxt")}" />
             <input type="submit" name="action" value="searchByCategoryID" />
         </form>
+            ${searchByCategoryError}<br>
         <a href="<c:url value="product"/>">See all</a>
         <c:if test="${isAdmin}">
             <a href="<c:url value="product?action=getUnable"/>">See unable products</a>
@@ -103,13 +104,13 @@
                 Enter product id to edit <input type="text" name="productID" value="${param["editProductID"]}" />
                 <input type="submit" name="action" value="getProductByID" />
             </form>
-            <form action="product" method="POST">
+            <form action="product" method="GET">
                 ProductID <input type="text" name="_productID" value="${product.productID}" readonly="readonly" />
                 Cat <input type="text" name="_categoryID" value="${product.categoryID}" />
                 Name <input type="text" name="_productName" value="${product.productName}" />
                 Price <input type="text" name="_productPrice" value="${product.price}" />
                 Quantity <input type="text" name="_productQuantity" value="${product.quantity}" />
-                Enable: ${product.isEnable}
+                Enable: <input type="checkbox" name="_isEnable" value="ON" <c:if test="${product.isEnable}">checked</c:if>/> 
                 <input type="submit" name="action" value="updateProduct" />
             </form>
             <h4>Update product message</h4>

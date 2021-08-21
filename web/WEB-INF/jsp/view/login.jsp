@@ -17,6 +17,8 @@
             Password<input type="password" name="password" value="" />
             <input type="submit" name="action" value="login" />
         </form>
-        <a href="<c:url value="signup"/>">Sign up</a>
+        <a href="<c:url value="login?action=loginByGG"/>">Login with Google</a><br>
+        <a href="<c:url value="signup"/>">Sign up</a><br>
+        login GG error: ${loginGGError}
     </body>
 </html>
