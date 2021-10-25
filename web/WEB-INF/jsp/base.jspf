@@ -1,10 +1,10 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<c:if test="${user != null}">
+<%--<c:if test="${user != null}">
     <h3>Hello <c:out value="${user.fullName}"/></h3>
-</c:if>
-<nav>
+</c:if>--%>
+<!--<nav>
     <c:if test="${user != null}">
         <a href="<c:url value="/login?action=logout"/>">Logout</a>
     </c:if>
@@ -14,5 +14,5 @@
     <a href="<c:url value="product"/>">Car shop</a>
     <a href="<c:url value="cart"/>">Your cart</a>
     <a href="<c:url value="order"/>">Your orders</a>
-</nav>
+</nav>-->
 

@@ -1,0 +1,31 @@
+<div class="container">
+    <div class="header">
+        <div class="logo">
+            <a href="<c:url value="/"/>"><img src="images/logo.png" alt=""/></a>
+        </div>							 
+        <div class="top-nav">										 
+            <label class="mobile_menu" for="mobile_menu">
+                <span>Menu</span>
+            </label>
+            <input id="mobile_menu" type="checkbox">
+            <ul class="nav">
+                 <c:if test="${!empty user}"><li class="dropdown1"><a>Welcome ${user.fullName}!</a></li> </c:if>
+                <li class="dropdown1"><a href="<c:url value="product"/>">CARS</a>
+                    <ul class="dropdown2">
+                        <li><a href="<c:url value="product?action=searchByCategoryID&searchCategoryIDTxt=1"/>">FORD</a></li>
+                        <li><a href="<c:url value="product?action=searchByCategoryID&searchCategoryIDTxt=2"/>">AUDI</a></li>
+                        <li><a href="<c:url value="product?action=searchByCategoryID&searchCategoryIDTxt=3"/>">HONDA</a></li>												
+                        <li><a href="<c:url value="product?action=searchByCategoryID&searchCategoryIDTxt=4"/>">TESLA</a></li>												
+                    </ul>
+                </li>
+                <c:if test="${empty user}"><li class="dropdown1"><a href="<c:url value="login"/>">LOGIN</a></li> </c:if>
+                <c:if test="${!empty user}"><li class="dropdown1"><a href="<c:url value="login?action=logout"/>">LOGOUT</a></li> </c:if>
+                <li class="dropdown1"><a href="<c:url value="signup"/>">SIGN UP</a>
+                    <li class="dropdown1"><a href="<c:url value="order"/>">ORDERS</a>
+                </li>               
+                <a class="shop" href="<c:url value="cart"/>"><img src="images/cart.png" alt=""/></a>
+            </ul>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+</div>	 

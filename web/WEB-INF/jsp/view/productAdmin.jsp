@@ -12,20 +12,23 @@
     </head>
     <body>
         <form action="product">
-            Input<input type="text" name="searchNameTxt" value="${request.getParameter("searchNameTxt")}" />
+            <input placeholder="NAME" type="text" name="searchNameTxt" value="${request.getParameter("searchNameTxt")}" />
             <input type="submit" name="action" value="searchByName" />           
         </form>
+            <!--
         <form action="product">
             Input<input type="text" name="searchCategoryIDTxt" value="${request.getParameter("searchCategoryIDTxt")}" />
             <input type="submit" name="action" value="searchByCategoryID" />
         </form>
-            ${searchByCategoryError}<br>
+            ${searchByCategoryError}<br>-->
+        <a href="<c:url value="/"/>">Main page</a>
         <a href="<c:url value="product"/>">See all</a>
+        <a href="<c:url value="order"/>">Order list</a>
         <c:if test="${isAdmin}">
             <a href="<c:url value="product?action=getUnable"/>">See unable products</a>
         </c:if>
-
         <c:if test="${!empty productList}">
+            <p style="color: orangered">${updateStateError}</p>
             <table border="1">
                 <thead>
                     <tr>
@@ -80,6 +83,7 @@
                 </tbody>
             </table>
         </c:if>
+            <hr>
         ${updateStateError}
 
         <c:if test="${isAdmin}">
@@ -94,12 +98,13 @@
             </form>
             <h4>Add product message</h4>
             <c:forEach items="${addValidationErrors}" var="er">   
-                ${er.getMessage()}<br>
+                <p style="color: orangered">${er.getMessage()}</p><br>
             </c:forEach>
+            <p style="color: green">${addProductMessage}</p><br>    
             <hr>
             <h3>Update product</h3>
             <h4>Get product by ID message</h4>
-            ${getProductByIdError}
+            <p style="color: orangered">${getProductByIdError}</p>
             <form action="product">
                 Enter product id to edit <input type="text" name="productID" value="${param["editProductID"]}" />
                 <input type="submit" name="action" value="getProductByID" />
@@ -114,11 +119,16 @@
                 <input type="submit" name="action" value="updateProduct" />
             </form>
             <h4>Update product message</h4>
+            <p style="color: green">${updateProductMessage}</p><br>
             <c:forEach items="${updateValidationErrors}" var="er">   
-                ${er.getMessage()}<br>
+                <p style="color: orangered">${er.getMessage()}</p><br>
             </c:forEach>
         </c:if>
-
+                <hr>
+                <h4>Categories</h4>
+                <c:forEach var="cat" items="${categoryMap}">
+                    ${cat.key}-${cat.value}<br>
+                </c:forEach>
 
 
     </body>

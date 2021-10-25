@@ -1,125 +1,97 @@
-<%-- 
-    Document   : product
-    Created on : Aug 13, 2021, 9:56:10 AM
-    Author     : ACER
---%>
-<%--@elvariable id="productList" type="java.util.List<lamnv.DTO.ProductDTO>"--%>
+<!--
+Author: W3layouts
+Author URL: http://w3layouts.com
+License: Creative Commons Attribution 3.0 Unported
+License URL: http://creativecommons.org/licenses/by/3.0/
+-->
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Products</title>
+        <link href="css/bootstrap.css" rel='stylesheet' type='text/css' />
+        <!-- jQuery (Bootstrap's JavaScript plugins) -->
+        <script src="js/jquery.min.js"></script>
+        <!-- Custom Theme files -->
+        <link href="css/style.css" rel="stylesheet" type="text/css" media="all" />
+        <!-- Custom Theme files -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="keywords" content="Bike-shop Responsive web template, Bootstrap Web Templates, Flat Web Templates, Andriod Compatible web template, 
+              Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyErricsson, Motorola web design" />
+        <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+        <!--webfont-->
+        <link href='http://fonts.googleapis.com/css?family=Roboto:500,900,100,300,700,400' rel='stylesheet' type='text/css'>
+        <!--webfont-->
+        <!-- dropdown -->
+        <script src="js/jquery.easydropdown.js"></script>
+        <link href="css/nav.css" rel="stylesheet" type="text/css" media="all"/>
+        <script src="js/scripts.js" type="text/javascript"></script>
+        <!--js-->
+
     </head>
     <body>
-        <form action="product">
-            Input<input type="text" name="searchNameTxt" value="${request.getParameter("searchNameTxt")}" />
-            <input type="submit" name="action" value="searchByName" />           
-        </form>
-        <form action="product">
-            Input<input type="text" name="searchCategoryIDTxt" value="${request.getParameter("searchCategoryIDTxt")}" />
-            <input type="submit" name="action" value="searchByCategoryID" />
-        </form>
-            ${searchByCategoryError}<br>
-        <a href="<c:url value="product"/>">See all</a>
-        <c:if test="${isAdmin}">
-            <a href="<c:url value="product?action=getUnable"/>">See unable products</a>
-        </c:if>
+        <!--banner-->
+        <script src="js/responsiveslides.min.js"></script>
+        <script>
+            $(function () {
+                $("#slider").responsiveSlides({
+                    auto: false,
+                    nav: true,
+                    speed: 500,
+                    namespace: "callbacks",
+                    pager: true,
+                });
+            });
+        </script>
+        <div class="banner-bg banner-sec">	
+            <c:import url="/WEB-INF/jsp/header.jspf"/>	 
+        </div>
+        <!--/banner-->
+        <div class="bikes">		 
+            <div class="mountain-sec">
+                <form action="product">
+                    <input type="text" name="searchNameTxt" placeholder="Name" required="">
+                    <input type="hidden" name="action" value="searchByName">
+                    <input type="submit" value="SEARCH">        
+                </form>
+                <c:if test="${empty productList}">
+                    <h2>NO AVAILABLE CARS</h2>
+                    <br><br><br><br><br><br><br><br><br><br>
+                </c:if>
+                <c:if test="${! empty productList}">
+                    <h2>AVAILABLE CARS</h2>
+                    <c:forEach items="${productList}" var="pro">
+                    <c:url var="addURL" value="cart?action=add">
+                        <c:param name="proID" value="${pro.productID}"/>
+                        <c:param name="quantity" value="1"/>
+                    </c:url>
+                    <a href="${addURL}"><div class="bike">				 
+                            <img src="images/bik3.jpg" alt=""/>
+                            <div class="bike-cost">
+                                <div class="bike-mdl">
+                                    <h4>${pro.productName}<span>ID:${pro.productID}</span>
+                                        <span>Category:${categoryMap.get(pro.categoryID)}</span>
+                                        <span>Price:${pro.price}</span>
+                                        <span>Quantity:${pro.quantity}</span></h4>
+                                </div>
+                                <div class="bike-cart">						 
+                                    <a class="buy" href="${addURL}">ADD TO CART</a>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div></a>	
+                    </c:forEach>
+                </c:if>
+                
 
-        <c:if test="${!empty productList}">
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Category</th>
-                            <c:if test="${!isAdmin}">
-                            <th>Add to cart</th>
-                            </c:if>
-                            <c:if test="${isAdmin}">
-                            <th>Is Enable</th>
-                            <th>Change state</th>
-                            </c:if>
+                <div class="clearfix"></div>
+            </div>		 
+        </div>
+    </div>
+    <!---->
+    <c:import url="/WEB-INF/jsp/footer.jspf"/>
+    <!---->
 
-                    </tr>
-                </thead>
-
-                <tbody>  
-                    <c:forEach var="pro" items="${productList}">
-                        <tr>
-                            <td>${pro.productID}</td>
-                            <td>${pro.productName}</td>
-                            <td>${pro.price}</td>
-                            <td>${pro.quantity}</td>
-                            <td>${pro.categoryID} - ${categoryMap.get(pro.categoryID)}</td>
-                            <td>
-                                <c:if test="${!isAdmin && pro.quantity>0}">
-                                    <a href="<c:url value="cart?action=add">
-                                           <c:param name="proID" value="${pro.productID}"/>
-                                           <c:param name="quantity" value="1"/>
-                                       </c:url>">
-                                        <button>Add</button>
-                                    </a>
-                                </c:if>
-                                <c:if test="${isAdmin}">
-                                    ${pro.isEnable}
-                                </c:if>
-                            </td>
-                            <c:if test="${isAdmin}">
-                                <td>
-                                    <a href="<c:url value="product?action=updateState">
-                                           <c:param name="UpdateStateProductID" value="${pro.productID}"/>
-                                       </c:url>">
-                                        <button>Switch state</button>
-                                    </a>
-                                </td> 
-                            </c:if>
-                        </tr>
-                    </c:forEach>    
-                </tbody>
-            </table>
-        </c:if>
-        ${updateStateError}
-
-        <c:if test="${isAdmin}">
-            <h3>Add new product</h3>
-            <form action="product" method="POST">
-                Cat <input type="text" name="categoryID" value="${param["categoryID"]}" />
-                Name <input type="text" name="productName" value="${param["productName"]}" />
-                Price <input type="text" name="productPrice" value="${param["productPrice"]}" />
-                Quantity <input type="text" name="productQuantity" value="${param["productQuantity"]}" />
-                Enable <input type="checkbox" name="isEnable" />
-                <input type="submit" name="action" value="addProduct" />
-            </form>
-            <h4>Add product message</h4>
-            <c:forEach items="${addValidationErrors}" var="er">   
-                ${er.getMessage()}<br>
-            </c:forEach>
-            <hr>
-            <h3>Update product</h3>
-            <h4>Get product by ID message</h4>
-            ${getProductByIdError}
-            <form action="product">
-                Enter product id to edit <input type="text" name="productID" value="${param["editProductID"]}" />
-                <input type="submit" name="action" value="getProductByID" />
-            </form>
-            <form action="product" method="GET">
-                ProductID <input type="text" name="_productID" value="${product.productID}" readonly="readonly" />
-                Cat <input type="text" name="_categoryID" value="${product.categoryID}" />
-                Name <input type="text" name="_productName" value="${product.productName}" />
-                Price <input type="text" name="_productPrice" value="${product.price}" />
-                Quantity <input type="text" name="_productQuantity" value="${product.quantity}" />
-                Enable: <input type="checkbox" name="_isEnable" value="ON" <c:if test="${product.isEnable}">checked</c:if>/> 
-                <input type="submit" name="action" value="updateProduct" />
-            </form>
-            <h4>Update product message</h4>
-            <c:forEach items="${updateValidationErrors}" var="er">   
-                ${er.getMessage()}<br>
-            </c:forEach>
-        </c:if>
-
-
-
-    </body>
+</body>
 </html>
+

@@ -76,6 +76,31 @@ public class ProductDAO {
         }
         return null;
     }
+    
+    public List<ProductDTO> getAllProductByName(String searchName) {
+        try (Connection con = DBHelper.getConnection()) {
+            if (con != null) {
+                String queryString = "SELECT ProductID, ProductName, Quantity, Price, CategoryID, IsEnable "
+                        + "FROM dbo.tblProduct "
+                        + "WHERE ProductName LIKE ?";
+                try (PreparedStatement stm = con.prepareStatement(queryString)) {
+                    stm.setString(1, "%" + searchName + "%");
+                    try (ResultSet rs = stm.executeQuery()) {
+                        List<ProductDTO> productList = new ArrayList<>();
+                        while (rs.next()) {
+                            ProductDTO product = new ProductDTO(rs.getInt("ProductID"), rs.getInt("Quantity"),
+                                    rs.getBigDecimal("Price"), rs.getNString("ProductName"), rs.getInt("CategoryID"), rs.getBoolean("IsEnable"));
+                            productList.add(product);
+                        }
+                        return productList;
+                    }
+                }
+            }
+        } catch (NamingException | SQLException ex) {
+            log.error(ex);
+        }
+        return null;
+    }
 
     public List<ProductDTO> getProductList() {
         try (Connection con = DBHelper.getConnection()) {

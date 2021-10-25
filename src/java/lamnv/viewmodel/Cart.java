@@ -23,6 +23,13 @@ public class Cart extends HashMap<ProductDTO, Integer> implements Serializable{
 //        });
 //        return total;
 //    }
+    public static BigDecimal calculateTotalPrice(List<ProductDTO> productList){
+        BigDecimal sum = new BigDecimal(0);
+        for(ProductDTO p : productList){
+            sum = sum.add(p.price.multiply(new BigDecimal(p.quantity)));
+        };
+        return sum;
+    }
 
     public Cart(List<ProductDTO> productList) {
         productList.forEach(p -> this.addProduct(p, p.quantity));

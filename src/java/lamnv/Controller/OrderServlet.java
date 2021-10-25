@@ -67,14 +67,21 @@ public class OrderServlet extends HttpServlet {
         }
 
         HttpSession session = request.getSession();
+        
         //admin cant access checkOut and submitOrder actions
         if (session.getAttribute("user") != null) {
             UserDTO user = (UserDTO) session.getAttribute("user");
             if (user.RoleID == 2 && (action.equals("checkOut") || action.equals("submitOrder"))) {
                 response.sendRedirect("product");
+                return;
             }
-
         }
+        
+//        if(session.getAttribute("cart") == null || ((Cart)session.getAttribute("cart")).isEmpty()){
+//            response.sendRedirect("cart");
+//            return;
+//        }
+            
 
         switch (action) {
             case "checkOut": {
@@ -153,9 +160,14 @@ public class OrderServlet extends HttpServlet {
     }
 
     private void submitOrder(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws IOException, ServletException {
-//        if(!authorize(request, response))
-//            return;
+        //Check cart
+        if(session.getAttribute("cart")==null || ((Cart) session.getAttribute("cart")).isEmpty()){
 
+                request.setAttribute("checkOutError", "Cart is empty");
+                request.getRequestDispatcher(checkOutViewURL).forward(request, response);
+                return;
+            }  
+        
         //validate address here
         String address = request.getParameter("address");
         if (address == null || address.isEmpty()) {
@@ -272,8 +284,12 @@ public class OrderServlet extends HttpServlet {
 
         OrderDetailDAO dao = new OrderDetailDAO();
         List<ProductDTO> productList = dao.getOrderDetails(orderID);
-        Cart cart = new Cart(productList);
-        request.setAttribute("totalPrice", cart.totalPrice);
+        if(productList==null){
+            request.getRequestDispatcher(orderViewURL).forward(request, response);
+            return;
+        }
+        
+        request.setAttribute("totalPrice", Cart.calculateTotalPrice(productList));
         request.setAttribute("productList", productList);
         request.setAttribute("orderID", orderID);
 
@@ -290,7 +306,7 @@ public class OrderServlet extends HttpServlet {
         Content content = new Content("text/plain", contentString);
         Mail mail = new Mail(from, subject, to, content);
 
-        SendGrid sg = new SendGrid("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");
+        SendGrid sg = new SendGrid("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");
         Request request = new Request();
         try {
             request.setMethod(Method.POST);
@@ -314,12 +330,12 @@ public class OrderServlet extends HttpServlet {
             int orderID = Integer.parseInt(orderIDString);
             OrderDAO dao = new OrderDAO();
             if(dao.verifyOrder(orderID)){
-                request.setAttribute("verificationResult", "Success");
+                request.setAttribute("verificationResult", "Verification success");
             }else{
-                request.setAttribute("verificationResult", "Fail");
+                request.setAttribute("verificationResult", "Verification fail");
             }
         } catch (NumberFormatException e) {
-            request.setAttribute("verificationResult", "Fail");
+            request.setAttribute("verificationResult", "Verification fail");
         }
         
         request.getRequestDispatcher(verifyViewURL).forward(request, response);

@@ -139,41 +139,8 @@ public class LoginServlet extends HttpServlet {
         }
 
         if (action.equals("login")) {
-            //Require user to logout first
-            HttpSession session = request.getSession(false);
-            if (session != null && session.getAttribute("user") != null) {
-                request.setAttribute("loginError", "Must logout before login new user");
-                //forward to error page
-                RequestDispatcher rd = request.getRequestDispatcher(errorViewURL);
-                rd.forward(request, response);
-                return;
-            }
-
-            //Get login in4
-            String userID = request.getParameter("userID");
-            String password = request.getParameter("password");
-            if (userID != null && password != null) {
-                UserDAO dao = new UserDAO();
-                UserDTO userInfo = dao.getUser(userID, password);
-
-                //Cant find user in database 
-                if (userInfo == null) {
-                    request.setAttribute("loginError", "User is not in database");
-                    RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
-                    rd.forward(request, response);
-                    return;
-                }
-
-                //Login success, set user infor in session
-                session.setAttribute("user", userInfo);
-                response.sendRedirect("product");
-                return;
-            }
-
-            //userID and password are null
-            request.setAttribute("loginError", "Please type userID and password to login");
-            RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
-            rd.forward(request, response);
+            login(request, response);
+            return;
         }
 
         if (action.equals("loginByGG")) {
@@ -283,8 +250,7 @@ public class LoginServlet extends HttpServlet {
                     session.setAttribute("user", createdUser);
                     success = true;
                 }
-            } 
-            //user was created in dtb
+            } //user was created in dtb
             else {
                 UserDTO userByGG = dao.getUser(id, id);
                 HttpSession session = request.getSession();
@@ -296,10 +262,10 @@ public class LoginServlet extends HttpServlet {
             request.getRequestDispatcher(loginViewURL).forward(request, response);
             return;
         }
-        
-        if(success){
+
+        if (success) {
             response.sendRedirect("product");
-        }else{
+        } else {
             response.sendRedirect("login");
         }
 
@@ -313,4 +279,41 @@ public class LoginServlet extends HttpServlet {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    private void login(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //Require user to logout first
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("user") != null) {
+            request.setAttribute("loginError", "Must logout before login new user");
+            //forward to error page
+            RequestDispatcher rd = request.getRequestDispatcher(errorViewURL);
+            rd.forward(request, response);
+            return;
+        }
+
+        //Get login in4
+        String userID = request.getParameter("userID");
+        String password = request.getParameter("password");
+        if (userID != null && password != null) {
+            UserDAO dao = new UserDAO();
+            UserDTO userInfo = dao.getUser(userID, password);
+
+            //Cant find user in database 
+            if (userInfo == null) {
+                request.setAttribute("loginError", "Cannot find user, please try again");
+                RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
+                rd.forward(request, response);
+                return;
+            }
+
+            //Login success, set user infor in session
+            session.setAttribute("user", userInfo);
+            response.sendRedirect("product");
+            return;
+        }
+
+        //userID and password are null
+        request.setAttribute("loginError", "Please type userID and password to login");
+        RequestDispatcher rd = request.getRequestDispatcher(loginViewURL);
+        rd.forward(request, response);
+    }
 }

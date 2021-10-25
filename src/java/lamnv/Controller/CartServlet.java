@@ -191,9 +191,9 @@ public class CartServlet extends HttpServlet {
             cart.deleteProduct(deletedProduct, -1);
             request.getSession().setAttribute("cart", cart);
         } catch (NumberFormatException e) {
-            request.setAttribute("deleteError", "Product ID and quantity must be integer");
+            request.setAttribute("deleteProductError", "Product ID and quantity must be integer");
         } catch (ProductExc ex) {
-            request.setAttribute("deleteError", ex.getMessage());
+            request.setAttribute("deleteProductError", ex.getMessage());
         }
 
         request.getRequestDispatcher(cartViewURL).forward(request, response);

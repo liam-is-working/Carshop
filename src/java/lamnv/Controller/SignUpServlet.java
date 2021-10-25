@@ -14,6 +14,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import lamnv.DAO.UserDAO;
 import lamnv.DTO.UserDTO;
 import lamnv.Util.Validator;
@@ -73,6 +74,7 @@ public class SignUpServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<SignUpExc> errorList;
+        
         if (request.getAttribute("errorList") == null) {
             errorList = new ArrayList<>();
             request.setAttribute("errorList", errorList);
@@ -142,7 +144,8 @@ public class SignUpServlet extends HttpServlet {
             //Create successfully
             //log here
             log.info("UserID:" + userID + " is created successfully");
-            response.sendRedirect("login");
+            request.setAttribute("signupMessage", "Success!");
+            request.getRequestDispatcher(signUpViewURL).forward(request, response);
         }
 
     }

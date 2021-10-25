@@ -37,6 +37,7 @@ public class ProductServlet extends HttpServlet {
 
     private static final Logger log = LogManager.getLogger();
     private final String productViewURL = "/WEB-INF/jsp/view/product.jsp";
+    private final String productViewAdminURL = "/WEB-INF/jsp/view/productAdmin.jsp";
     private final String errorViewURL = "/WEB-INF/jsp/view/error.jsp";
 
 //    private List<ProductDTO> availableProductList;
@@ -101,6 +102,10 @@ public class ProductServlet extends HttpServlet {
                 return;
             }
             case "searchByName": {
+                if(isAdmin(request)){
+                    searchByNameAdmin(request, response);
+                    return;
+                }
                 searchByName(request, response);
                 return;
             }
@@ -212,12 +217,12 @@ public class ProductServlet extends HttpServlet {
             int searchCatIDInt = Integer.parseInt(searchCategoryIDTxt);
             List<ProductDTO> proList = dao.getProductListByCategory(searchCatIDInt);
             request.setAttribute("productList", proList);
-            
+
         } catch (NumberFormatException e) {
             request.setAttribute("searchByCategoryError", "Category ID must be an integer");
         }
         RequestDispatcher rd = request.getRequestDispatcher(productViewURL);
-            rd.forward(request, response);
+        rd.forward(request, response);
 
     }
 
@@ -288,13 +293,15 @@ public class ProductServlet extends HttpServlet {
 
         if (!valid || !success) {
             request.setAttribute("addValidationErrors", validationErrors);
-            request.getRequestDispatcher(productViewURL).forward(request, response);
+            request.getRequestDispatcher(productViewAdminURL).forward(request, response);
             return;
+        }else{
+            request.setAttribute("addProductMessage", "Success!");
         }
 
         //Success 
-        log.info("ProductID:" + productID +" is created");
-        response.sendRedirect("product");
+        log.info("ProductID:" + productID + " is created");
+        request.getRequestDispatcher(productViewAdminURL).forward(request, response);
 
     }
 
@@ -354,10 +361,10 @@ public class ProductServlet extends HttpServlet {
 
                 //perform edit on db
                 if (valid) {
-                    ProductDTO updatePro = new ProductDTO(proID,quantity, price, proName, catID, isEnable);
+                    ProductDTO updatePro = new ProductDTO(proID, quantity, price, proName, catID, isEnable);
 
                     if (dao.editProduct(updatePro)) {
-                        success=true;
+                        success = true;
                     } else {
                         success = false;
                     }
@@ -372,14 +379,12 @@ public class ProductServlet extends HttpServlet {
 
         if (!valid || !success) {
             request.setAttribute("updateValidationErrors", validationErrors);
-            request.getRequestDispatcher(productViewURL).forward(request, response);
-            return;
+        } else {
+            request.setAttribute("updateProductMessage", "Success!");
+            log.info("ProductID:" + proIDString + " is updated");
         }
-        
-        //Success
-        log.info("ProductID:" + proIDString +" is updated");
-        response.sendRedirect("product");
 
+        request.getRequestDispatcher(productViewAdminURL).forward(request, response);
     }
 
     private void getAllAdmin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -391,7 +396,7 @@ public class ProductServlet extends HttpServlet {
         ProductDAO dao = new ProductDAO();
         List<ProductDTO> proList = dao.getProductList();
         request.setAttribute("productList", proList);
-        RequestDispatcher rd = request.getRequestDispatcher(productViewURL);
+        RequestDispatcher rd = request.getRequestDispatcher(productViewAdminURL);
         rd.forward(request, response);
     }
 
@@ -456,7 +461,7 @@ public class ProductServlet extends HttpServlet {
         ProductDAO dao = new ProductDAO();
         List<ProductDTO> proList = dao.getUnableProductList();
         request.setAttribute("productList", proList);
-        RequestDispatcher rd = request.getRequestDispatcher(productViewURL);
+        RequestDispatcher rd = request.getRequestDispatcher(productViewAdminURL);
         rd.forward(request, response);
 
     }
@@ -480,18 +485,17 @@ public class ProductServlet extends HttpServlet {
 
             if (product == null) {
                 request.setAttribute("getProductByIdError", "No product was found");
-                RequestDispatcher rd = request.getRequestDispatcher(productViewURL);
+                RequestDispatcher rd = request.getRequestDispatcher(productViewAdminURL);
                 rd.forward(request, response);
                 return;
             }
 
             request.setAttribute("product", product);
-
-            RequestDispatcher rd = request.getRequestDispatcher(productViewURL);
-            rd.forward(request, response);
         } catch (NumberFormatException e) {
-            response.sendRedirect("product");
+            request.setAttribute("getProductByIdError", "No product was found");
         }
+
+        request.getRequestDispatcher(productViewAdminURL).forward(request, response);
 
     }
 
@@ -514,7 +518,7 @@ public class ProductServlet extends HttpServlet {
 
             if (product == null) {
                 request.setAttribute("updateStateError", "No product was found");
-                RequestDispatcher rd = request.getRequestDispatcher(productViewURL);
+                RequestDispatcher rd = request.getRequestDispatcher(productViewAdminURL);
                 rd.forward(request, response);
                 return;
             }
@@ -527,17 +531,32 @@ public class ProductServlet extends HttpServlet {
             }
 
             if (!success) {
-                request.setAttribute("getProductByIdError", "No update was made");
+                request.setAttribute("updateStateError", "No update was made");
                 request.getRequestDispatcher(productViewURL).forward(request, response);
                 return;
             }
-            
+
             //Success
-            log.info("ProductID:" + proIDString +" state is switched");
+            log.info("ProductID:" + proIDString + " state is switched");
             response.sendRedirect("product");
         } catch (NumberFormatException e) {
-            response.sendRedirect("product");
+            request.setAttribute("updateStateError", "No product was found");
+            request.getRequestDispatcher(productViewAdminURL).forward(request, response);
         }
+        
+        
+    }
+
+    private void searchByNameAdmin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        ProductDAO dao = new ProductDAO();
+        String searchNameTxt = request.getParameter("searchNameTxt");
+        if (searchNameTxt == null) {
+            searchNameTxt = "";
+        }
+        List<ProductDTO> proList = dao.getAllProductByName(searchNameTxt);
+        request.setAttribute("productList", proList);
+        RequestDispatcher rd = request.getRequestDispatcher(productViewAdminURL);
+        rd.forward(request, response);
     }
 
 }
